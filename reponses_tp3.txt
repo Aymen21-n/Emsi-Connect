@@ -1,0 +1,166 @@
+TP3 - Vérification de l'écran Mes cours
+
+J'ai créé CoursesPage avec une barre d'application portant le titre « Mes cours ».
+Pour vérifier l'écran, je l'ai temporairement défini comme page d'accueil de l'application.
+HomePage et ProfilePage sont conservées dans le projet.
+
+Exercice : Column, SingleChildScrollView et ListView
+
+A — Column avec 25 éléments :
+Les éléments sont disposés verticalement. Column ne défile pas seule. Quand le
+contenu dépasse la hauteur disponible, un débordement est signalé.
+
+B — SingleChildScrollView contenant une Column de 25 éléments :
+Les éléments restent verticaux et la page défile. Le défilement est assuré par
+SingleChildScrollView, pas par Column. Il n'y a pas de débordement dû au contenu.
+
+C — ListView avec 25 éléments :
+Les éléments sont verticaux et la liste défile. ListView gère elle-même le
+défilement et ne provoque pas de débordement pour cette liste.
+
+La page utilise actuellement la version C avec 25 éléments numérotés.
+
+Questions
+
+1. Column place ses enfants verticalement, mais ne permet pas de défiler.
+SingleChildScrollView rend son enfant défilant, et ListView est une liste
+défilante conçue pour présenter des éléments les uns après les autres.
+
+2. Dans la solution B, c'est SingleChildScrollView qui rend la page défilante.
+Column ne fait qu'organiser ses enfants verticalement.
+
+3. Une Column seule essaie d'afficher tous ses enfants dans l'espace disponible.
+Si leur hauteur totale dépasse cet espace, le contenu déborde et Flutter signale
+un RenderFlex overflow.
+
+4. Pour une page « Mon profil » avec une photo, des informations et quelques
+boutons, SingleChildScrollView avec une Column semble adapté : la page contient
+des sections variées, et peut défiler si elles ne tiennent pas à l'écran.
+
+5. Pour une liste de 100 cours, ListView semble adaptée, car elle gère le
+défilement d'une liste d'éléments répétitifs. ListView.builder est également
+approprié pour créer les éléments à mesure qu'ils sont nécessaires.
+
+6. Oui. ListView peut afficher des widgets différents, par exemple en
+fournissant une liste de widgets enfants différents. Pour une liste générée,
+on peut aussi retourner un widget différent selon l'élément dans itemBuilder.
+
+Liste simple de modules
+
+J'ai remplacé les éléments temporaires par une liste de 12 modules. J'ai ajouté
+des séparateurs de 12 pixels entre les cartes et un padding horizontal de 16
+pixels. Les éléments supplémentaires permettent de vérifier le défilement.
+
+Padding décrit l'espace intérieur ou autour du contenu d'un widget. Ici, le
+padding de ListView réserve une marge horizontale au bord de la liste.
+SizedBox crée un espace de taille déterminée entre deux widgets.
+
+child désigne un unique widget enfant. children désigne une liste de widgets
+enfants, comme les éléments d'une Column ou d'une ListView.
+
+Modules dans des Card
+
+Chaque module est affiché dans une Card aux coins arrondis (rayon 14), avec une
+élévation de 2, une marge extérieure inférieure de 12 pixels et un Padding
+intérieur de 16 pixels.
+
+En testant elevation: 0, la Card est plate et son ombre est absente ou presque
+imperceptible. Avec elevation: 6, l'ombre est plus marquée et la Card semble
+davantage surélevée. J'ai remis elevation à 2 pour la version finale.
+
+margin crée un espace extérieur autour de la Card, entre celle-ci et les autres
+éléments. padding crée un espace intérieur entre le bord de la Card et son
+contenu.
+
+elevation contrôle l'ombre de la Card et l'impression de hauteur par rapport à
+la surface derrière elle.
+
+Card fournit une surface Material avec des comportements et un style adaptés
+aux cartes, dont l'élévation. Container est plus général et sert à regrouper,
+dimensionner, espacer ou décorer un widget; il ne représente pas à lui seul une
+carte Material.
+
+Informations structurées avec ListTile
+
+Chaque carte contient maintenant un ListTile avec une icône à gauche, le nom
+du module, un sous-titre indiquant l'enseignant ou le volume horaire, et une
+flèche à droite. Les titres longs sont autorisés sur deux lignes puis tronqués
+si nécessaire, afin de rester lisibles sur un petit écran.
+
+leading affiche le widget placé au début de la ligne, ici l'icône. title affiche
+l'information principale, le nom du module. subtitle affiche une information
+secondaire comme l'enseignant ou le volume horaire. trailing affiche le widget
+placé à la fin, ici la flèche.
+
+ListTile permet de disposer ces informations selon une présentation Material
+cohérente sans construire soi-même une Row et une Column ni gérer leur
+alignement et leurs espacements.
+
+Non, une Card ne doit pas obligatoirement contenir un ListTile. Elle peut
+contenir tout widget, par exemple du texte, une image ou une composition de
+plusieurs widgets.
+
+Interaction au clic avec onTap
+
+Chaque ListTile exécute un callback onTap au toucher et affiche un SnackBar
+contenant « Module sélectionné : » suivi du nom exact du module.
+
+Un callback est une fonction fournie à un widget ou à une méthode pour être
+appelée plus tard, quand un événement survient. Le code de onTap n'est donc pas
+exécuté lors de la construction de la page : Flutter ne l'appelle qu'après le
+toucher de la ligne.
+
+onTap est le callback d'interaction par toucher de widgets comme ListTile.
+onPressed joue le rôle d'action activée sur des boutons, par exemple ElevatedButton
+ou IconButton. Tous deux déclenchent une fonction à la suite d'une action de
+l'utilisateur, mais sont proposés par des widgets différents.
+
+Générer les cartes avec ListView.builder
+
+La liste Dart modules contient 14 noms de modules. Les deux derniers ajoutés
+sont « Cybersécurité » et « Cloud computing ». ListView.builder crée chaque
+Card et son ListTile à partir de l'élément modules[index], sans écrire une
+nouvelle Card pour chaque module. Un toucher affiche le nom correspondant dans
+un SnackBar.
+
+1. itemCount indique le nombre d'éléments que la liste doit construire. Ici,
+   modules.length permet à ListView.builder de connaître le nombre de modules.
+
+2. index est la position de l'élément en cours de construction. Il commence à 0
+   pour le premier élément, puis augmente jusqu'à itemCount - 1.
+
+3. modules[index] fonctionne parce que modules est une liste Dart et que index
+   désigne la position de l'élément voulu. L'indexation commence à 0.
+
+4. ListView(children: [...]) reçoit des widgets déjà construits et convient
+   notamment aux petites listes fixes. ListView.builder construit les éléments
+   à la demande à partir de itemBuilder; il est plus efficace pour les longues
+   listes, car seuls les éléments nécessaires à l'affichage sont construits.
+
+Contraintes de hauteur : Column, Expanded et ListView
+
+J'ai placé le titre fixe « Modules du semestre » dans une Column au-dessus de
+la ListView.builder. La liste est enveloppée dans Expanded; le titre reste donc
+visible à la même position lorsque les cartes défilent.
+
+1. Dans une Column de hauteur bornée, Expanded attribue à la liste l'espace
+   restant après les autres enfants. La ListView reçoit ainsi une hauteur finie
+   et peut définir sa zone de défilement, au lieu de recevoir une hauteur
+   illimitée.
+
+2. Il n'est pas nécessaire d'entourer systématiquement ListView de
+   SingleChildScrollView : ListView est elle-même défilable. Les imbriquer peut
+   créer deux zones de défilement ou des contraintes non adaptées. On utilise
+   plutôt Expanded pour faire tenir une ListView dans l'espace restant d'une
+   Column, ou une ListView seule quand elle constitue tout le contenu défilant.
+
+Défis : données enrichies, numérotation et écran étroit
+
+Chaque élément de modules est une Map contenant le nom du module, son
+enseignant et son nombre d'heures. ListTile affiche le nom comme titre et les
+deux autres informations comme sous-titre. CircleAvatar affiche le numéro du
+module (index + 1), et onTap montre le nom exact sélectionné dans un SnackBar.
+
+Le test sur un écran de 280 pixels vérifie l'affichage du titre long, des
+informations de l'enseignant et des heures, du numéro, ainsi que l'action au
+toucher, sans débordement.

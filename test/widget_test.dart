@@ -9,9 +9,80 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:emsi_connect/main.dart';
+import 'package:emsi_connect/screens/courses_page.dart';
 import 'package:emsi_connect/screens/profile_page.dart';
 
 void main() {
+  testWidgets('course tiles show a snackbar with the selected module', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(280, 640);
+    tester.view.devicePixelRatio = 1;
+    await tester.pumpWidget(const MaterialApp(home: CoursesPage()));
+
+    try {
+      final firstModule = find.text(
+        'Développement d’applications mobiles multiplateformes',
+      );
+      await tester.ensureVisible(firstModule);
+      await tester.pumpAndSettle();
+      expect(find.text('Mme Aouraghe · 32 h'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+      expect(tester.getRect(firstModule).right, lessThanOrEqualTo(280));
+
+      for (final module in [
+        'Développement d’applications mobiles multiplateformes',
+        'Sécurité informatique',
+        'Intelligence artificielle',
+      ]) {
+        final moduleFinder = find.text(module);
+        await tester.ensureVisible(moduleFinder);
+        await tester.pumpAndSettle();
+        await tester.tap(moduleFinder);
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('Module sélectionné : $module'), findsOneWidget);
+      }
+
+      expect(tester.takeException(), isNull);
+    } finally {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    }
+  });
+
+  testWidgets('builder includes the added modules and handles their tap', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    await tester.pumpWidget(const MaterialApp(home: CoursesPage()));
+
+    try {
+      final courseList = tester.widget<ListView>(find.byType(ListView));
+      expect(courseList.childrenDelegate.estimatedChildCount, 14);
+
+      final heading = find.text('Modules du semestre');
+      expect(heading, findsOneWidget);
+      final headingTop = tester.getTopLeft(heading).dy;
+      final lastModule = find.text('Cloud computing');
+      await tester.scrollUntilVisible(
+        lastModule,
+        300,
+        scrollable: find.byType(Scrollable),
+      );
+      await tester.ensureVisible(lastModule);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(heading).dy, headingTop);
+      await tester.tap(lastModule);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Module sélectionné : Cloud computing'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    } finally {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    }
+  });
+
   testWidgets('home sections fit on a narrow screen', (
     WidgetTester tester,
   ) async {
