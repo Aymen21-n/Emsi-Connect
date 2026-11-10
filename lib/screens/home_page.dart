@@ -59,32 +59,23 @@ class HomePage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSection(context, Icons.menu_book, 'Mes cours'),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildSection(
-                      context,
-                      Icons.calendar_month,
-                      'Planning',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSection(context, Icons.person, 'Mon profil'),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildSection(context, Icons.task_alt, 'Mes tâches'),
-                  ),
-                ],
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = constraints.maxWidth < 600 ? 2 : 3;
+                  return GridView.count(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _buildSection(context, Icons.menu_book, 'Mes cours'),
+                      _buildSection(context, Icons.calendar_month, 'Planning'),
+                      _buildSection(context, Icons.person, 'Mon profil'),
+                      _buildSection(context, Icons.task_alt, 'Mes tâches'),
+                    ],
+                  );
+                },
               ),
             ],
           ),

@@ -1,0 +1,98 @@
+TP4 - Questions de compréhension
+
+1. Quelle est la différence entre TextField et TextFormField ?
+
+TextField est un champ de saisie général. TextFormField est conçu pour être
+utilisé dans un Form et propose notamment un validator pour vérifier la
+saisie.
+
+2. Quel est le rôle de Form ?
+
+Form regroupe les champs d’un formulaire afin de faciliter leur validation et
+leur gestion.
+
+3. Pourquoi associer une GlobalKey<FormState> à Form ?
+
+La GlobalKey<FormState> permet d’accéder à l’état du formulaire, notamment
+pour appeler validate() et déclencher la validation de ses champs.
+
+4. Que retourne un validator lorsque le champ est valide ? Et lorsqu’il est
+   invalide ?
+
+Il retourne null lorsque la valeur est valide. Si elle est invalide, il
+retourne une chaîne de caractères qui décrit l’erreur à afficher.
+
+5. Pourquoi keyboardType: TextInputType.emailAddress ne suffit-il pas à
+   valider un email ?
+
+keyboardType demande au clavier de proposer une disposition adaptée à la
+saisie d’une adresse email. Il ne vérifie pas le contenu saisi ; la validation
+doit être effectuée séparément par le code.
+
+6. À quoi sert TextEditingController ? Comment lire sa valeur ?
+
+TextEditingController permet de lire ou de modifier le texte d’un champ. Sa
+valeur se lit avec controller.text.
+
+7. Pourquoi libérer les contrôleurs dans dispose() ?
+
+Un contrôleur est une ressource conservée par l’état du widget. Il faut
+appeler dispose() lorsqu’on n’en a plus besoin afin de libérer ses ressources
+et d’éviter de le conserver inutilement.
+
+8. Quelle différence entre StatelessWidget et StatefulWidget dans ce TP ?
+
+StatelessWidget convient à un widget sans état local modifiable. StatefulWidget
+est utilisé ici pour les pages qui doivent conserver des contrôleurs et gérer
+un état qui change, par exemple la visibilité du mot de passe.
+
+9. Quel est le rôle de setState pour le bouton de visibilité du mot de passe ?
+
+setState signale à Flutter qu’une valeur d’état a changé et que le widget doit
+être reconstruit. Le bouton modifie ainsi la visibilité du mot de passe.
+
+10. Pourquoi ne faut-il pas afficher un mot de passe dans la console ?
+
+Le mot de passe est une donnée sensible. L’afficher dans la console peut le
+rendre visible ou le conserver dans des journaux ; il doit rester confidentiel.
+
+11. Pourquoi une validation locale ne signifie-t-elle pas qu’un compte a été
+    créé ?
+
+La validation locale vérifie uniquement les champs sur l’appareil. Sans
+service d’authentification ni échange avec un serveur, elle ne crée aucun
+compte.
+
+12. À quoi servent ThemeData et ColorScheme.fromSeed ?
+
+ThemeData définit l’apparence commune de l’application, comme le style des
+champs et des boutons. ColorScheme.fromSeed génère une palette cohérente à
+partir d’une couleur de départ.
+
+13. Quelle différence entre une couleur codée en dur et une couleur obtenue
+    avec Theme.of(context) ?
+
+Une couleur codée en dur reste fixe. Theme.of(context) permet d’obtenir une
+couleur du thème actif, afin que l’interface reste cohérente quand le thème,
+par exemple clair ou sombre, change.
+
+14. Quelle est la fonction de ConstrainedBox(maxWidth: 420) ?
+
+ConstrainedBox limite la largeur maximale du formulaire à 420 pixels sur un
+grand écran, ce qui évite d’étirer les champs. Sur un écran plus étroit, le
+formulaire s’adapte à l’espace disponible.
+
+15. Quelle différence entre MediaQuery et LayoutBuilder ?
+
+MediaQuery fournit des informations sur la fenêtre et l’environnement, par
+exemple la taille de l’écran ou les zones occupées par le système.
+LayoutBuilder fournit les contraintes de taille disponibles à l’endroit où il
+se trouve dans l’arbre des widgets ; il est donc utile pour adapter localement
+la disposition.
+
+16. Quelle différence entre ListView et GridView ?
+
+ListView affiche des éléments dans une seule liste défilante ; elle convient
+par exemple à une liste de cours. GridView dispose les éléments en lignes et
+colonnes ; elle convient par exemple à des rubriques de navigation affichées
+en grille.

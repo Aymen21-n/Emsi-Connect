@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class CoursesPage extends StatelessWidget {
-  const CoursesPage({super.key});
+  const CoursesPage({super.key, this.isDarkMode = false, this.onToggleTheme});
+
+  final bool isDarkMode;
+  final VoidCallback? onToggleTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +62,18 @@ class CoursesPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mes cours')),
+      appBar: AppBar(
+        title: const Text('Mes cours'),
+        actions: [
+          IconButton(
+            tooltip: isDarkMode
+                ? 'Activer le thème clair'
+                : 'Activer le thème sombre',
+            onPressed: onToggleTheme,
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+          ),
+        ],
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

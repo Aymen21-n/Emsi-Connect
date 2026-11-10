@@ -10,9 +10,229 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:emsi_connect/main.dart';
 import 'package:emsi_connect/screens/courses_page.dart';
+import 'package:emsi_connect/screens/home_page.dart';
+import 'package:emsi_connect/screens/login_page.dart';
 import 'package:emsi_connect/screens/profile_page.dart';
+import 'package:emsi_connect/screens/register_page.dart';
 
 void main() {
+  testWidgets('application uses a shared Material 3 theme', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.theme!.useMaterial3, isTrue);
+    expect(
+      app.theme!.colorScheme.primary,
+      ColorScheme.fromSeed(seedColor: Colors.indigo).primary,
+    );
+    expect(app.theme!.inputDecorationTheme.filled, isTrue);
+    expect(app.theme!.inputDecorationTheme.border, isA<OutlineInputBorder>());
+    expect(app.theme!.elevatedButtonTheme.style, isNotNull);
+
+    await tester.tap(find.byTooltip('Activer le thème sombre'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.dark,
+    );
+    expect(
+      Theme.of(tester.element(find.byType(Scaffold))).brightness,
+      Brightness.dark,
+    );
+
+    await tester.tap(find.byTooltip('Activer le thème clair'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.light,
+    );
+  });
+
+  testWidgets('login page displays email and obscured password fields', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: LoginPage()));
+
+    expect(find.text('Connexion'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    expect(find.text('Adresse email'), findsOneWidget);
+    expect(find.text('exemple@emsi.ma'), findsOneWidget);
+    expect(find.text('Mot de passe'), findsOneWidget);
+
+    final passwordInput = tester.widget<EditableText>(
+      find.byType(EditableText).last,
+    );
+    expect(passwordInput.obscureText, isTrue);
+
+    await tester.tap(find.byIcon(Icons.visibility));
+    await tester.pump();
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText).last).obscureText,
+      isFalse,
+    );
+    expect(find.byIcon(Icons.visibility_off), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.visibility_off));
+    await tester.pump();
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText).last).obscureText,
+      isTrue,
+    );
+    expect(find.byIcon(Icons.visibility), findsOneWidget);
+  });
+
+  testWidgets(
+    'login form validates locally and shows success only when valid',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(const MaterialApp(home: LoginPage()));
+
+      final emailField = find.byType(TextFormField).at(0);
+      final passwordField = find.byType(TextFormField).at(1);
+      final verifyButton = find.text('Vérifier la saisie');
+
+      await tester.tap(verifyButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Email obligatoire'), findsOneWidget);
+      expect(find.text('Mot de passe obligatoire'), findsOneWidget);
+      expect(find.text('Saisie valide (test local)'), findsNothing);
+
+      await tester.enterText(emailField, 'adresse-invalide');
+      await tester.enterText(passwordField, '1234');
+      await tester.tap(verifyButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Email invalide'), findsOneWidget);
+      expect(find.text('Au moins 8 caractères'), findsOneWidget);
+      expect(find.text('Saisie valide (test local)'), findsNothing);
+
+      await tester.enterText(emailField, 'etudiant@emsi.ma');
+      await tester.enterText(passwordField, 'motdepasse');
+      await tester.tap(verifyButton);
+      await tester.pump();
+      expect(find.text('etudiant@emsi.ma — saisie valide'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.textContaining('motdepasse'),
+        ),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets('login form width adapts to phone and tablet screens', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    await tester.pumpWidget(const MaterialApp(home: LoginPage()));
+
+    try {
+      tester.view.physicalSize = const Size(320, 640);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(find.byType(Form)).width, lessThanOrEqualTo(288));
+
+      tester.view.physicalSize = const Size(1000, 800);
+      await tester.pumpAndSettle();
+      final formRect = tester.getRect(find.byType(Form));
+      expect(formRect.width, 420);
+      expect(formRect.center.dx, 500);
+      expect(tester.takeException(), isNull);
+    } finally {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    }
+  });
+
+  testWidgets('registration form validates matching passwords locally', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: RegisterPage()));
+
+    expect(find.text('Inscription'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(6));
+
+    final nameField = find.byType(TextFormField).at(0);
+    final phoneField = find.byType(TextFormField).at(1);
+    final emailField = find.byType(TextFormField).at(2);
+    final passwordField = find.byType(TextFormField).at(3);
+    final confirmationField = find.byType(TextFormField).at(4);
+    final submitButton = find.text('Créer mon compte');
+
+    await tester.enterText(nameField, 'Étudiant EMSI');
+    await tester.enterText(phoneField, '0612345678');
+    await tester.enterText(emailField, 'etudiant@emsi.ma');
+    await tester.enterText(passwordField, 'motdepasse');
+    await tester.enterText(confirmationField, 'autremotdepasse');
+    await tester.ensureVisible(submitButton);
+    await tester.pumpAndSettle();
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+    expect(find.text('Les mots de passe ne correspondent pas'), findsOneWidget);
+    expect(find.text('Formulaire valide — compte non créé'), findsNothing);
+
+    await tester.enterText(confirmationField, 'motdepasse');
+    await tester.ensureVisible(submitButton);
+    await tester.pumpAndSettle();
+    await tester.tap(submitButton);
+    await tester.pump();
+    expect(find.text('Formulaire valide — compte non créé'), findsOneWidget);
+  });
+
+  testWidgets('registration validates numeric phone and counts description', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: RegisterPage()));
+
+    final phoneField = find.byType(TextFormField).at(1);
+    final descriptionField = find.byType(TextFormField).last;
+    await tester.enterText(phoneField, '06123');
+    await tester.enterText(descriptionField, 'Étudiant en informatique');
+    await tester.pump();
+
+    final phoneInput = tester.widget<EditableText>(
+      find.descendant(of: phoneField, matching: find.byType(EditableText)),
+    );
+    expect(phoneInput.keyboardType, TextInputType.phone);
+    expect(find.text('5/10'), findsNothing);
+    expect(find.text('24/200'), findsOneWidget);
+
+    final submitButton = find.text('Créer mon compte');
+    await tester.ensureVisible(submitButton);
+    await tester.pumpAndSettle();
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+    expect(find.text('Le téléphone doit contenir 10 chiffres'), findsOneWidget);
+  });
+
+  testWidgets('registration form scrolls to the submit button with keyboard', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+    await tester.pumpWidget(const MaterialApp(home: RegisterPage()));
+
+    try {
+      final submitButton = find.text('Créer mon compte');
+      await tester.ensureVisible(submitButton);
+      await tester.pumpAndSettle();
+
+      expect(tester.getRect(submitButton).bottom, lessThanOrEqualTo(360));
+      await tester.tap(submitButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Nom complet obligatoire'), findsOneWidget);
+      expect(find.text('Email obligatoire'), findsOneWidget);
+      expect(find.text('Mot de passe obligatoire'), findsOneWidget);
+      expect(find.text('Confirmez votre mot de passe'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    } finally {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+      tester.view.viewInsets = const FakeViewPadding();
+    }
+  });
+
   testWidgets('course tiles show a snackbar with the selected module', (
     WidgetTester tester,
   ) async {
@@ -83,48 +303,46 @@ void main() {
     }
   });
 
-  testWidgets('home sections fit on a narrow screen', (
+  testWidgets('home sections adapt between phone and tablet grids', (
     WidgetTester tester,
   ) async {
-    tester.view.physicalSize = const Size(320, 800);
     tester.view.devicePixelRatio = 1;
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
 
-    const labels = ['Mes cours', 'Planning', 'Mon profil', 'Mes tâches'];
-    final widths = <double>[];
-    final bounds = <(Offset, Size)>[];
+    try {
+      tester.view.physicalSize = const Size(320, 800);
+      await tester.pumpAndSettle();
+      var grid = tester.widget<GridView>(find.byType(GridView));
+      expect(
+        (grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount)
+            .crossAxisCount,
+        2,
+      );
+      expect(find.text('Mes cours'), findsOneWidget);
+      expect(find.text('Planning'), findsOneWidget);
+      expect(find.text('Mon profil'), findsOneWidget);
+      expect(find.text('Mes tâches'), findsOneWidget);
+      expect(tester.takeException(), isNull);
 
-    for (final label in labels) {
-      expect(find.text(label), findsOneWidget);
-      final sectionFinder = find
-          .ancestor(of: find.text(label), matching: find.byType(Container))
-          .first;
-      final section = tester.widget<Container>(sectionFinder);
-      expect(section.padding, const EdgeInsets.all(16));
-      expect(section.decoration, isA<BoxDecoration>());
-      final decoration = section.decoration! as BoxDecoration;
-      expect(decoration.color, Colors.blue.shade50);
-      expect(decoration.borderRadius, BorderRadius.circular(12));
-      expect(decoration.border, isA<Border>());
-      final size = tester.getSize(sectionFinder);
-      widths.add(size.width);
-      bounds.add((tester.getTopLeft(sectionFinder), size));
+      tester.view.physicalSize = const Size(800, 900);
+      await tester.pumpAndSettle();
+      grid = tester.widget<GridView>(find.byType(GridView));
+      expect(
+        (grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount)
+            .crossAxisCount,
+        3,
+      );
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byIcon(Icons.notifications));
+      await tester.pump();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    } finally {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
     }
-
-    expect(widths[0], widths[1]);
-    expect(widths[2], widths[3]);
-    expect(bounds[1].$1.dx - (bounds[0].$1.dx + widths[0]), 12);
-    expect(bounds[3].$1.dx - (bounds[2].$1.dx + widths[2]), 12);
-    expect(bounds[2].$1.dy - (bounds[0].$1.dy + bounds[0].$2.height), 12);
-
-    await tester.tap(find.byIcon(Icons.notifications));
-    await tester.pump();
-    await tester.tap(find.byType(FloatingActionButton));
-    await tester.pump();
-    expect(tester.takeException(), isNull);
-
-    tester.view.resetPhysicalSize();
-    tester.view.resetDevicePixelRatio();
   });
 
   testWidgets('profile page displays the profile information', (
