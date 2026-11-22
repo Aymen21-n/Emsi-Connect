@@ -1,0 +1,46 @@
+TP5 - Multimédia
+Questions de compréhension
+
+1. Pourquoi MultimediaPage doit-elle être un StatefulWidget ?
+
+MultimediaPage doit conserver et mettre à jour des informations qui changent
+pendant son utilisation : l'image sélectionnée, son nom et sa taille, l'état
+de l'enregistrement, sa durée, le fichier audio et l'état de chargement.
+StatefulWidget et setState permettent de reconstruire l'interface quand ces
+valeurs changent.
+
+2. Quelle différence entre ImageSource.camera et ImageSource.gallery ?
+
+ImageSource.camera demande à image_picker de lancer la capture d'une nouvelle
+image avec la caméra. ImageSource.gallery ouvre le sélecteur d'images pour
+choisir une image déjà présente sur l'appareil.
+
+3. Pourquoi pickImage retourne-t-elle un XFile ?
+
+XFile est une représentation multiplateforme d'un fichier. Elle donne accès
+notamment à son nom, son chemin, ses octets et sa taille avec length(), sans
+imposer une implémentation propre à Android, iOS ou au Web.
+
+4. À quoi sert mounted après un await ?
+
+Après un await, l'utilisateur a pu quitter la page et son State peut avoir été
+supprimé. mounted indique si le State est toujours dans l'arbre des widgets.
+On le vérifie avant d'appeler setState ou d'utiliser le contexte de la page,
+afin d'éviter une erreur après sa destruction.
+
+5. Pourquoi appelle-t-on dispose sur AudioRecorder et AudioPlayer ?
+
+dispose libère les ressources natives utilisées par l'enregistreur et le
+lecteur audio, comme le microphone et les ressources de lecture. Cela évite de
+les laisser actifs ou de garder inutilement des ressources après la fermeture
+de la page. Il faut également annuler les minuteries et abonnements aux flux
+qui ne sont plus nécessaires.
+
+6. Quelle différence entre permission refusée et permission définitivement
+refusée ?
+
+Une permission refusée peut généralement être redemandée par l'application.
+Lorsqu'elle est définitivement refusée, le système ne présente souvent plus
+la demande : l'utilisateur doit modifier l'autorisation dans les réglages de
+l'application. L'application doit expliquer la situation et proposer un accès
+aux réglages, sans planter.

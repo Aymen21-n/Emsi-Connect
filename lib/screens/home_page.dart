@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'about_page.dart';
 import 'courses_page.dart';
 import 'login_page.dart';
+import 'multimedia_page.dart';
 import 'profile_page.dart';
 import 'settings_page.dart';
 
@@ -86,6 +87,19 @@ class _HomePageState extends State<HomePage> {
                   context,
                   MaterialPageRoute<void>(
                     builder: (context) => const ProfilePage(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.perm_media),
+              title: const Text('Espace multimédia'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const MultimediaPage(),
                   ),
                 );
               },

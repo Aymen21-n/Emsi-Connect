@@ -12,10 +12,32 @@ import 'package:emsi_connect/main.dart';
 import 'package:emsi_connect/screens/courses_page.dart';
 import 'package:emsi_connect/screens/home_page.dart';
 import 'package:emsi_connect/screens/login_page.dart';
+import 'package:emsi_connect/screens/multimedia_page.dart';
 import 'package:emsi_connect/screens/profile_page.dart';
 import 'package:emsi_connect/screens/register_page.dart';
 
 void main() {
+  testWidgets('home drawer opens the multimedia page', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    final multimediaLink = find.descendant(
+      of: find.byType(Drawer),
+      matching: find.text('Espace multimédia'),
+    );
+    await tester.ensureVisible(multimediaLink);
+    await tester.tap(multimediaLink);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MultimediaPage), findsOneWidget);
+    expect(find.text('Espace multimédia'), findsOneWidget);
+    expect(find.text('Prendre une photo'), findsOneWidget);
+    expect(find.text('Enregistrer'), findsOneWidget);
+  });
+
   testWidgets('application uses a shared Material 3 theme', (
     WidgetTester tester,
   ) async {

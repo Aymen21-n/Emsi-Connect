@@ -24,6 +24,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>EMSI Connect utilise la caméra pour prendre une photo.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>EMSI Connect utilise le microphone pour enregistrer une question.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>EMSI Connect permet de sélectionner une image.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
