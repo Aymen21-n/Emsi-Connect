@@ -21,6 +21,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const MyApp());
 
+    expect(find.text('Connexion'), findsOneWidget);
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.theme!.useMaterial3, isTrue);
     expect(
@@ -31,6 +32,17 @@ void main() {
     expect(app.theme!.inputDecorationTheme.border, isA<OutlineInputBorder>());
     expect(app.theme!.elevatedButtonTheme.style, isNotNull);
 
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'etudiant@emsi.ma',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'motdepasse');
+    await tester.tap(find.text('Vérifier la saisie'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bienvenue sur EMSI Connect'), findsOneWidget);
+    await tester.tap(find.text('Mes cours'));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byTooltip('Activer le thème sombre'));
     await tester.pumpAndSettle();
     expect(
@@ -38,7 +50,7 @@ void main() {
       ThemeMode.dark,
     );
     expect(
-      Theme.of(tester.element(find.byType(Scaffold))).brightness,
+      Theme.of(tester.element(find.byType(CoursesPage))).brightness,
       Brightness.dark,
     );
 
@@ -84,40 +96,153 @@ void main() {
   });
 
   testWidgets(
-    'login form validates locally and shows success only when valid',
+    'valid login navigates through the app and logout returns to login',
     (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1;
       await tester.pumpWidget(const MaterialApp(home: LoginPage()));
 
-      final emailField = find.byType(TextFormField).at(0);
-      final passwordField = find.byType(TextFormField).at(1);
-      final verifyButton = find.text('Vérifier la saisie');
+      try {
+        final emailField = find.byType(TextFormField).at(0);
+        final passwordField = find.byType(TextFormField).at(1);
+        final verifyButton = find.text('Vérifier la saisie');
 
-      await tester.tap(verifyButton);
-      await tester.pumpAndSettle();
-      expect(find.text('Email obligatoire'), findsOneWidget);
-      expect(find.text('Mot de passe obligatoire'), findsOneWidget);
-      expect(find.text('Saisie valide (test local)'), findsNothing);
+        await tester.tap(verifyButton);
+        await tester.pumpAndSettle();
+        expect(find.text('Email obligatoire'), findsOneWidget);
+        expect(find.text('Mot de passe obligatoire'), findsOneWidget);
 
-      await tester.enterText(emailField, 'adresse-invalide');
-      await tester.enterText(passwordField, '1234');
-      await tester.tap(verifyButton);
-      await tester.pumpAndSettle();
-      expect(find.text('Email invalide'), findsOneWidget);
-      expect(find.text('Au moins 8 caractères'), findsOneWidget);
-      expect(find.text('Saisie valide (test local)'), findsNothing);
+        await tester.enterText(emailField, 'adresse-invalide');
+        await tester.enterText(passwordField, '1234');
+        await tester.tap(verifyButton);
+        await tester.pumpAndSettle();
+        expect(find.text('Email invalide'), findsOneWidget);
+        expect(find.text('Au moins 8 caractères'), findsOneWidget);
 
-      await tester.enterText(emailField, 'etudiant@emsi.ma');
-      await tester.enterText(passwordField, 'motdepasse');
-      await tester.tap(verifyButton);
-      await tester.pump();
-      expect(find.text('etudiant@emsi.ma — saisie valide'), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(SnackBar),
-          matching: find.textContaining('motdepasse'),
-        ),
-        findsNothing,
-      );
+        await tester.enterText(emailField, 'etudiant@emsi.ma');
+        await tester.enterText(passwordField, 'motdepasse');
+        await tester.tap(verifyButton);
+        await tester.pumpAndSettle();
+        expect(find.text('EMSI Connect'), findsOneWidget);
+        expect(find.text('Bienvenue sur EMSI Connect'), findsOneWidget);
+
+        await tester.tap(find.byTooltip('Open navigation menu'));
+        await tester.pumpAndSettle();
+        expect(find.text('Étudiant EMSI'), findsOneWidget);
+        expect(find.text('etudiant@emsi.ma'), findsOneWidget);
+        final drawer = find.byType(Drawer);
+        final coursesLink = find.descendant(
+          of: drawer,
+          matching: find.text('Mes cours'),
+        );
+        await tester.ensureVisible(coursesLink);
+        await tester.tap(coursesLink);
+        await tester.pumpAndSettle();
+        expect(find.text('Modules du semestre'), findsOneWidget);
+        await tester.ensureVisible(find.text('Retour'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Retour'));
+        await tester.pumpAndSettle();
+        expect(find.text('Bienvenue sur EMSI Connect'), findsOneWidget);
+
+        await tester.tap(find.byTooltip('Open navigation menu'));
+        await tester.pumpAndSettle();
+        final aboutLink = find.descendant(
+          of: find.byType(Drawer),
+          matching: find.text('À propos'),
+        );
+        await tester.ensureVisible(aboutLink);
+        await tester.tap(aboutLink);
+        await tester.pumpAndSettle();
+        expect(find.text('Version pédagogique 1.0'), findsOneWidget);
+        expect(find.textContaining('consulter vos cours'), findsOneWidget);
+        await tester.tap(find.text('Retour'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Open navigation menu'));
+        await tester.pumpAndSettle();
+        final profileLink = find.descendant(
+          of: find.byType(Drawer),
+          matching: find.text('Mon profil'),
+        );
+        await tester.ensureVisible(profileLink);
+        await tester.tap(profileLink);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Voir les détails'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Voir les détails'));
+        await tester.pumpAndSettle();
+        expect(find.text('Aymen Nafis'), findsOneWidget);
+        expect(find.text('Informatique'), findsOneWidget);
+        await tester.tap(find.text('Retour'));
+        await tester.pumpAndSettle();
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Open navigation menu'));
+        await tester.pumpAndSettle();
+        final settingsLink = find.descendant(
+          of: find.byType(Drawer),
+          matching: find.text('Paramètres'),
+        );
+        await tester.ensureVisible(settingsLink);
+        await tester.tap(settingsLink);
+        await tester.pumpAndSettle();
+        var notificationsSwitch = find.widgetWithText(
+          SwitchListTile,
+          'Notifications',
+        );
+        var compactSwitch = find.widgetWithText(SwitchListTile, 'Mode compact');
+        expect(
+          tester.widget<SwitchListTile>(notificationsSwitch).value,
+          isTrue,
+        );
+        expect(tester.widget<SwitchListTile>(compactSwitch).value, isFalse);
+        await tester.tap(find.text('Notifications'));
+        await tester.tap(find.text('Mode compact'));
+        await tester.pumpAndSettle();
+        expect(find.text('Notifications : Désactivées'), findsOneWidget);
+        expect(find.text('Mode compact : Activé'), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Open navigation menu'));
+        await tester.pumpAndSettle();
+        final reopenedSettingsLink = find.descendant(
+          of: find.byType(Drawer),
+          matching: find.text('Paramètres'),
+        );
+        await tester.ensureVisible(reopenedSettingsLink);
+        await tester.tap(reopenedSettingsLink);
+        await tester.pumpAndSettle();
+        notificationsSwitch = find.widgetWithText(
+          SwitchListTile,
+          'Notifications',
+        );
+        compactSwitch = find.widgetWithText(SwitchListTile, 'Mode compact');
+        expect(
+          tester.widget<SwitchListTile>(notificationsSwitch).value,
+          isTrue,
+        );
+        expect(tester.widget<SwitchListTile>(compactSwitch).value, isFalse);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Open navigation menu'));
+        await tester.pumpAndSettle();
+        final logoutLink = find.descendant(
+          of: find.byType(Drawer),
+          matching: find.text('Déconnexion'),
+        );
+        await tester.ensureVisible(logoutLink);
+        await tester.tap(logoutLink);
+        await tester.pumpAndSettle();
+        expect(find.text('Connexion'), findsOneWidget);
+        expect(find.text('Adresse email'), findsOneWidget);
+      } finally {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      }
     },
   );
 
@@ -412,6 +537,41 @@ void main() {
 
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('profile name edit updates the profile and details page', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1;
+    await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
+
+    try {
+      await tester.ensureVisible(find.text('Modifier le nom'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Modifier le nom'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '   ');
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+      expect(find.text('Le nom est obligatoire'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'Sara El Amrani');
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sara El Amrani'), findsOneWidget);
+      expect(find.text('Nom : Sara El Amrani'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Voir les détails'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Voir les détails'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sara El Amrani'), findsOneWidget);
+      expect(find.text('Informatique'), findsOneWidget);
+    } finally {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    }
   });
 
   testWidgets('Row icon spacing changes with main axis alignment', (

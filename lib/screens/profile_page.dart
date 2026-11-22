@@ -1,7 +1,65 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatelessWidget {
+import 'student_details_page.dart';
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final TextEditingController _nameController = TextEditingController();
+  String _studentName = 'Aymen Nafis';
+
+  Future<void> _editStudentName() async {
+    _nameController.text = _studentName;
+    String? errorText;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Modifier le nom'),
+          content: TextField(
+            controller: _nameController,
+            autofocus: true,
+            decoration: InputDecoration(labelText: 'Nom', errorText: errorText),
+            onChanged: (_) {
+              if (errorText != null) {
+                setDialogState(() => errorText = null);
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final updatedName = _nameController.text.trim();
+                if (updatedName.isEmpty) {
+                  setDialogState(() => errorText = 'Le nom est obligatoire');
+                  return;
+                }
+                setState(() => _studentName = updatedName);
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Valider'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +102,14 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildStudentCard(),
+              _buildStudentCard(_studentName),
               const SizedBox(height: 24),
               const Text(
                 'Informations personnelles',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              _buildInformation(Icons.person, 'Nom', 'Aymen Nafis'),
+              _buildInformation(Icons.person, 'Nom', _studentName),
               const SizedBox(height: 12),
               _buildInformation(Icons.school, 'Filière', 'Informatique'),
               const SizedBox(height: 12),
@@ -63,6 +121,26 @@ class ProfilePage extends StatelessWidget {
                 Icons.calendar_month,
                 'Année universitaire',
                 '2026–2027',
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _editStudentName,
+                child: const Text('Modifier le nom'),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (context) => StudentDetailsPage(
+                        studentName: _studentName,
+                        program: 'Informatique',
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Voir les détails'),
               ),
               const SizedBox(height: 24),
               Row(
@@ -96,7 +174,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStudentCard() {
+  Widget _buildStudentCard(String studentName) {
     return Container(
       key: const ValueKey('student-card'),
       width: double.infinity,
@@ -173,8 +251,8 @@ class ProfilePage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        'Aymen Nafis',
+                      Text(
+                        studentName,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,

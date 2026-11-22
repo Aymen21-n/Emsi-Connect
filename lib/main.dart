@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/courses_page.dart';
+import 'screens/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -75,8 +75,7 @@ class _MyAppState extends State<MyApp> {
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
       themeMode: _themeMode,
-      home: CoursesPage(
-        isDarkMode: _themeMode == ThemeMode.dark,
+      home: LoginPage(
         onToggleTheme: () {
           setState(() {
             _themeMode = _themeMode == ThemeMode.light

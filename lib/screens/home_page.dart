@@ -1,10 +1,27 @@
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+import 'about_page.dart';
+import 'courses_page.dart';
+import 'login_page.dart';
+import 'profile_page.dart';
+import 'settings_page.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, this.onToggleTheme});
+
+  final VoidCallback? onToggleTheme;
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool notificationsEnabled = true;
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -26,6 +43,109 @@ class HomePage extends StatelessWidget {
             },
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: colors.primary),
+              accountName: const Text('Étudiant EMSI'),
+              accountEmail: const Text('etudiant@emsi.ma'),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: colors.onPrimary,
+                child: Icon(Icons.person, color: colors.primary),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home_outlined),
+              title: const Text('Accueil'),
+              selected: true,
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.menu_book_outlined),
+              title: const Text('Mes cours'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) =>
+                        CoursesPage(onToggleTheme: widget.onToggleTheme),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('Mon profil'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const ProfilePage(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text('Paramètres'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const SettingsPage(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            SwitchListTile(
+              secondary: const Icon(Icons.notifications_outlined),
+              title: const Text('Notifications'),
+              value: notificationsEnabled,
+              onChanged: (value) {
+                setState(() {
+                  notificationsEnabled = value;
+                });
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('À propos'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const AboutPage(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Déconnexion'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const LoginPage(),
+                  ),
+                  (route) => false,
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -69,9 +189,35 @@ class HomePage extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      _buildSection(context, Icons.menu_book, 'Mes cours'),
+                      _buildSection(
+                        context,
+                        Icons.menu_book,
+                        'Mes cours',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) => CoursesPage(
+                                onToggleTheme: widget.onToggleTheme,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       _buildSection(context, Icons.calendar_month, 'Planning'),
-                      _buildSection(context, Icons.person, 'Mon profil'),
+                      _buildSection(
+                        context,
+                        Icons.person,
+                        'Mon profil',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) => const ProfilePage(),
+                            ),
+                          );
+                        },
+                      ),
                       _buildSection(context, Icons.task_alt, 'Mes tâches'),
                     ],
                   );
@@ -90,21 +236,29 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(BuildContext context, IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade100),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(height: 8),
-          Text(label, textAlign: TextAlign.center),
-        ],
+  Widget _buildSection(
+    BuildContext context,
+    IconData icon,
+    String label, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.blue.shade100),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 8),
+            Text(label, textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }

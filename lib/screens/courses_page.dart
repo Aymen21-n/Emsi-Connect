@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 class CoursesPage extends StatelessWidget {
-  const CoursesPage({super.key, this.isDarkMode = false, this.onToggleTheme});
+  const CoursesPage({super.key, this.onToggleTheme});
 
-  final bool isDarkMode;
   final VoidCallback? onToggleTheme;
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     const List<Map<String, Object>> modules = [
       {
         'nom': 'Développement d’applications mobiles multiplateformes',
@@ -126,6 +127,13 @@ class CoursesPage extends StatelessWidget {
                   ),
                 );
               },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Retour'),
             ),
           ),
         ],

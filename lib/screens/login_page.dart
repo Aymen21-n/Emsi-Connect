@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'home_page.dart';
 import '../utils/form_validators.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.onToggleTheme});
+
+  final VoidCallback? onToggleTheme;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -77,9 +80,12 @@ class _LoginPageState extends State<LoginPage> {
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          final email = _emailController.text.trim();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('$email — saisie valide')),
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  HomePage(onToggleTheme: widget.onToggleTheme),
+                            ),
                           );
                         }
                       },
